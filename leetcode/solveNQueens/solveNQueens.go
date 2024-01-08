@@ -1,11 +1,9 @@
 package main
 
-import "fmt"
-
-func main() {
-	n := 4
-	fmt.Println(solveNQueens(n))
-}
+//func main() {
+//	n := 4
+//	fmt.Println(solveNQueens(n))
+//}
 
 var res [][]string
 

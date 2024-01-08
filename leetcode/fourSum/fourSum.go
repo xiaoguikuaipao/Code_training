@@ -12,31 +12,58 @@ func main() {
 }
 
 func fourSum(nums []int, target int) [][]int {
-	res := make([][]int, 0, 20)
 	sort.Ints(nums)
-	n := len(nums)
-	for i := 0; i < n-3 && nums[i]+nums[i+1]+nums[i+2]+nums[i+3] <= target; i++ {
-		if i > 0 && nums[i-1] == nums[i] || nums[i]+nums[n-1]+nums[n-2]+nums[n-3] < target {
+	ret := make([][]int, 0)
+	if target > 0 && nums[0] > target {
+		return [][]int{}
+	}
+	if target < 0 && nums[len(nums)-1] < target {
+		return [][]int{}
+	}
+	for i, e1 := range nums {
+
+		//pay attention to deduplication
+		if i > 0 && e1 == nums[i-1] {
 			continue
 		}
-		for j := i + 1; j < n-2 && nums[i]+nums[j]+nums[j+1]+nums[j+2] <= target; j++ {
-			if j > i+1 && nums[j-1] == nums[j] || nums[i]+nums[j]+nums[n-1]+nums[n-2] < target {
+
+		res := target - e1
+		if res > 0 && nums[len(nums)-1]*3 < res {
+			continue
+		}
+		if res < 0 && i+1 < len(nums) && nums[i+1]*3 > res {
+			continue
+		}
+		for j, size := i+1, len(nums); j < size; j++ {
+
+			//pay attention to deduplication
+			if j > i+1 && nums[j] == nums[j-1] {
 				continue
 			}
-			for left, right := j+1, n-1; left < right; {
-				if sum := nums[i] + nums[j] + nums[left] + nums[right]; sum == target {
-					res = append(res, []int{nums[i], nums[j], nums[left], nums[right]})
-					for left++; left < right && nums[left-1] == nums[left]; left++ {
-					}
-					for right--; left < right && nums[right] == nums[right+1]; right-- {
-					}
-				} else if sum < target {
+
+			left := j + 1
+			right := size - 1
+			for left < right {
+				if e1+nums[j]+nums[left]+nums[right] == target {
+					ret = append(ret, []int{e1, nums[j], nums[left], nums[right]})
 					left++
-				} else if sum > target {
+					for left < right && nums[left] == nums[left-1] {
+						left++
+					}
+					right--
+					for left < right && nums[right] == nums[right+1] {
+						right--
+					}
+				}
+				if e1+nums[j]+nums[left]+nums[right] < target {
+					left++
+				}
+				if e1+nums[j]+nums[left]+nums[right] > target {
 					right--
 				}
 			}
 		}
+
 	}
-	return res
+	return ret
 }

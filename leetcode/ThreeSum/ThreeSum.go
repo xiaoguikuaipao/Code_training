@@ -2,40 +2,37 @@ package ThreeSum
 
 import "sort"
 
-func threesum(nums []int) [][]int {
+func threeSum(nums []int) [][]int {
 	sort.Ints(nums)
-	result, start, end, index := make([][]int, 0), 0, 0, 0
-	Sum := 0
-	length := len(nums)
-	for index = 0; index < length-1; index++ {
-		if nums[index] > 0 {
+	ret := make([][]int, 0)
+	for i, e := range nums {
+		if e > 0 {
 			break
 		}
-		if index >= 1 && nums[index] == nums[index-1] {
+		if i > 0 && e == nums[i-1] {
 			continue
 		}
-		start = index + 1
-		end = length - 1
-		for start < length && start < end {
-			Sum = nums[start] + nums[end] + nums[index]
-			if Sum == 0 {
-				result = append(result, []int{nums[start], nums[end], nums[index]})
-				start++
-				for nums[start] == nums[start-1] && start < end {
-					start++
+		left := i + 1
+		right := len(nums) - 1
+		for left < right {
+			if e+(nums[left]+nums[right]) == 0 {
+				ret = append(ret, []int{e, nums[left], nums[right]})
+				left++
+				right--
+				for left < right && nums[left] == nums[left-1] {
+					left++
 				}
-			} else if Sum < 0 {
-				start++
-				for nums[start] == nums[start-1] && start < end {
-					start++
+				for left < right && nums[right] == nums[right+1] {
+					right--
 				}
-			} else if Sum > 0 {
-				end--
-				for nums[end] == nums[end+1] && start < end {
-					end--
-				}
+			}
+			if e+(nums[left]+nums[right]) > 0 {
+				right--
+			}
+			if e+(nums[left]+nums[right]) < 0 {
+				left++
 			}
 		}
 	}
-	return result
+	return ret
 }
