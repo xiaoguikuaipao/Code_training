@@ -4,6 +4,7 @@ import "fmt"
 
 func repeatedSubstringPattern(s string) bool {
 	next := GetNext(s)
+	fmt.Println(next)
 	size := len(s)
 	if next[len(next)-1] != 0 && size%(size-next[len(next)-1]) == 0 {
 		return true
@@ -54,6 +55,6 @@ func GetNext(pattern string) (next []int) {
 }
 
 func main() {
-	s := "ababc"
+	s := "abacababacab"
 	fmt.Println(repeatedSubstringPattern(s))
 }
