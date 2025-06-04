@@ -1,23 +1,31 @@
 package main
 
 // 节点交换规则
-type selectFirst func(index, parent int) bool
+type IsSiftUp func(index, parent int) bool
 
 type Heap[T any] struct {
-	data []T
-	selectFirst selectFirst
+	data     []T
+	isSiftUp IsSiftUp
 }
 
 // 构造函数（需传入比较器）
-func NewHeap[T any](selectFirst selectFirst, elements ...T) *Heap[T] {
+func NewHeap[T any](isSiftUp IsSiftUp, elements ...T) *Heap[T] {
 	h := &Heap[T]{
-		data: make([]T, 0, len(elements)),
-		selectFirst: selectFirst,
+		data:     make([]T, 0, len(elements)),
+		isSiftUp: isSiftUp,
 	}
 	for _, e := range elements {
 		h.Insert(e)
 	}
+	h.heapify()
 	return h
+}
+
+func (h *Heap[T]) heapify() {
+	lastNonLeaf := len(h.data)/2 - 1
+	for i := lastNonLeaf; i >= 0; i-- {
+		h.siftDown(i)
+	}
 }
 
 // 插入元素
@@ -30,7 +38,7 @@ func (h *Heap[T]) Insert(e T) {
 func (h *Heap[T]) siftUp(index int) {
 	for index > 0 {
 		parent := (index - 1) / 2
-		if h.selectFirst(index, parent) {
+		if h.isSiftUp(index, parent) {
 			h.swap(index, parent)
 			index = parent
 		} else {
@@ -40,12 +48,17 @@ func (h *Heap[T]) siftUp(index int) {
 }
 
 func (h *Heap[T]) siftDown(index int) {
-	size := len(h.data)
 	left := 2 * index
 	right := 2*index + 1
-	target := left
-	if h.selectFirst(index, left) {
-		target = 
+	target := index
+	if h.isSiftUp(left, target) {
+		target = left
+	}
+	if h.isSiftUp(right, target) {
+		target = right
+	}
+	if target != index {
+		h.swap(index, target)
 	}
 }
 
