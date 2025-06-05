@@ -1,4 +1,4 @@
-package main
+package datastructimpl
 
 // 节点交换规则
 type IsSiftUp func(index, parent int) bool
@@ -21,6 +21,11 @@ func NewHeap[T any](isSiftUp IsSiftUp, elements ...T) *Heap[T] {
 	return h
 }
 
+func (h *Heap[T]) Data() []T {
+	return h.data
+}
+
+// O(n)
 func (h *Heap[T]) heapify() {
 	lastNonLeaf := len(h.data)/2 - 1
 	for i := lastNonLeaf; i >= 0; i-- {
@@ -28,13 +33,13 @@ func (h *Heap[T]) heapify() {
 	}
 }
 
-// 插入元素
+// 插入元素 O(1)
 func (h *Heap[T]) Insert(e T) {
 	h.data = append(h.data, e)
 	h.siftUp(len(h.data) - 1)
 }
 
-// 上浮
+// 上浮 O(1)
 func (h *Heap[T]) siftUp(index int) {
 	for index > 0 {
 		parent := (index - 1) / 2
@@ -48,17 +53,23 @@ func (h *Heap[T]) siftUp(index int) {
 }
 
 func (h *Heap[T]) siftDown(index int) {
-	left := 2 * index
-	right := 2*index + 1
-	target := index
-	if h.isSiftUp(left, target) {
-		target = left
-	}
-	if h.isSiftUp(right, target) {
-		target = right
-	}
-	if target != index {
-		h.swap(index, target)
+	lastNonLeaf := len(h.data)/2 - 1
+	for index <= lastNonLeaf {
+		left := 2 * index
+		right := 2*index + 1
+		target := index
+		if h.isSiftUp(left, target) {
+			target = left
+		}
+		if h.isSiftUp(right, target) {
+			target = right
+		}
+		if target != index {
+			h.swap(index, target)
+		} else {
+			break
+		}
+		index = target
 	}
 }
 
