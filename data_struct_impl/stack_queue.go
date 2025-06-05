@@ -184,18 +184,18 @@ func (d *SyncDeque[T]) Front() (T, bool) {
 	return zero, false
 }
 
-func NewDeque[T any](cap ...int) Dequer[T] {
+func NewDeque[T any](size ...int) Dequer[T] {
 	d := &Deque[T]{}
-	if len(cap) > 0 && cap[0] > 0 {
-		d.cap = cap[0]
+	if len(size) > 0 && size[0] > 0 {
+		d.cap = size[0]
 	}
 	d.items = make([]T, 0, d.cap)
 	return d
 }
 
-func NewSyncDeque[T any](cap ...int) Dequer[T] {
+func NewSyncDeque[T any](size ...int) Dequer[T] {
 	d := &SyncDeque[T]{
-		Dequer: NewDeque[T](cap...),
+		Dequer: NewDeque[T](size...),
 	}
 	return d
 }
@@ -204,15 +204,15 @@ type Stack[T any] struct {
 	d Dequer[T]
 }
 
-func NewStack[T any](cap ...int) *Stack[T] {
+func NewStack[T any](size ...int) *Stack[T] {
 	return &Stack[T]{
-		d: NewDeque[T](cap...),
+		d: NewDeque[T](size...),
 	}
 }
 
-func NewSyncStack[T any](cap ...int) *Stack[T] {
+func NewSyncStack[T any](size ...int) *Stack[T] {
 	return &Stack[T]{
-		d: NewSyncDeque[T](cap...),
+		d: NewSyncDeque[T](size...),
 	}
 }
 

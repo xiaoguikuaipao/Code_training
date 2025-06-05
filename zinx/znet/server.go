@@ -14,6 +14,7 @@ type Server struct {
 	Version string
 	IP      string
 	Port    int
+	Router  ziface.IRouter
 }
 
 func callBack(conn *net.TCPConn, data []byte, cnt int) error {
@@ -43,7 +44,7 @@ func (s *Server) Start() {
 	}
 	sugar.Infof("[Start] Server %s success...", s.Name)
 
-	var cid uint32 = 0
+	var cid uint32
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
@@ -51,7 +52,7 @@ func (s *Server) Start() {
 			continue
 		}
 
-		dealConn := NewConnection(conn, cid, callBack)
+		dealConn := NewConnection(conn, cid, s.Router)
 		cid++
 		go dealConn.Start()
 	}
@@ -67,11 +68,17 @@ func (s *Server) Serve() {
 	select {}
 }
 
+func (s *Server) AddRouter(router ziface.IRouter) {
+	s.Router = router
+	fmt.Println("AddRouter success")
+}
+
 func NewServer(name string) ziface.IServer {
 	return &Server{
 		Name:    name,
 		Version: "tcp4",
 		IP:      "0.0.0.0",
 		Port:    8080,
+		Router:  nil,
 	}
 }

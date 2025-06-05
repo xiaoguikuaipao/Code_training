@@ -7,20 +7,20 @@ import (
 )
 
 type Connection struct {
-	Conn      *net.TCPConn
-	ConnID    uint32
-	isClosed  bool
-	handleAPI ziface.HandleFunc
-	ExitChan  chan bool
+	Conn     *net.TCPConn
+	ConnID   uint32
+	isClosed bool
+	ExitChan chan bool
+	Router   ziface.IRouter
 }
 
-func NewConnection(conn *net.TCPConn, connId uint32, callback_api ziface.HandleFunc) *Connection {
+func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
 	return &Connection{
-		Conn:      conn,
-		ConnID:    connId,
-		isClosed:  false,
-		handleAPI: callback_api,
-		ExitChan:  make(chan bool, 1),
+		Conn:     conn,
+		ConnID:   connID,
+		isClosed: false,
+		ExitChan: make(chan bool, 1),
+		Router:   router,
 	}
 }
 
@@ -44,7 +44,7 @@ func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
 
-func (c *Connection) Send([]byte, int) error {
+func (c *Connection) Send([]byte) error {
 	return nil
 }
 
@@ -62,15 +62,17 @@ func (c *Connection) StartReader() {
 
 	for {
 		buf := make([]byte, 512)
-		cnt, err := c.Conn.Read(buf)
+		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Printf("recv buf error:%s\n", err)
 			continue
 		}
-		err = c.handleAPI(c.Conn, buf, cnt)
-		if err != nil {
-			fmt.Printf("handle error:%s\n", err.Error())
-			break
+		req := Request{
+			conn: c,
+			data: buf,
 		}
+		go func() {
+			c.Router.PreHandler(&req)
+		}()
 	}
 }

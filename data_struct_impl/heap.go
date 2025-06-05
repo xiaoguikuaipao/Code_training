@@ -11,11 +11,8 @@ type Heap[T any] struct {
 // 构造函数（需传入比较器）
 func NewHeap[T any](isSiftUp IsSiftUp, elements ...T) *Heap[T] {
 	h := &Heap[T]{
-		data:     make([]T, 0, len(elements)),
+		data:     elements,
 		isSiftUp: isSiftUp,
-	}
-	for _, e := range elements {
-		h.Insert(e)
 	}
 	h.heapify()
 	return h
@@ -55,8 +52,8 @@ func (h *Heap[T]) siftUp(index int) {
 func (h *Heap[T]) siftDown(index int) {
 	lastNonLeaf := len(h.data)/2 - 1
 	for index <= lastNonLeaf {
-		left := 2 * index
-		right := 2*index + 1
+		left := 2*index + 1
+		right := 2*index + 2
 		target := index
 		if h.isSiftUp(left, target) {
 			target = left
