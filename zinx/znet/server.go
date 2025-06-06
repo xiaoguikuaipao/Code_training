@@ -3,6 +3,7 @@ package znet
 import (
 	"fmt"
 	"net"
+	"zinx/internal/config"
 	"zinx/ziface"
 
 	"go.uber.org/zap"
@@ -17,13 +18,10 @@ type Server struct {
 	Router  ziface.IRouter
 }
 
-func callBack(conn *net.TCPConn, data []byte, cnt int) error {
-	_, err := conn.Write(data[:cnt])
-	if err != nil {
-		err = fmt.Errorf("callBack error:%w", err)
-		return err
-	}
-	return nil
+var DefaultServer = &Server{}
+
+func init() {
+	DefaultServer = NewServer(config.DefaultConfig).(*Server)
 }
 
 func (s *Server) Start() {
@@ -52,7 +50,7 @@ func (s *Server) Start() {
 			continue
 		}
 
-		dealConn := NewConnection(conn, cid, s.Router)
+		dealConn := newConnection(conn, cid, s.Router)
 		cid++
 		go dealConn.Start()
 	}
@@ -73,12 +71,12 @@ func (s *Server) AddRouter(router ziface.IRouter) {
 	fmt.Println("AddRouter success")
 }
 
-func NewServer(name string) ziface.IServer {
+func NewServer(config *config.ServerConfig) ziface.IServer {
 	return &Server{
-		Name:    name,
+		Name:    config.Name,
 		Version: "tcp4",
-		IP:      "0.0.0.0",
-		Port:    8080,
+		IP:      config.Host,
+		Port:    config.Port,
 		Router:  nil,
 	}
 }

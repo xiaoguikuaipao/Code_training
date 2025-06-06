@@ -2,6 +2,7 @@ package znet
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"zinx/ziface"
 )
@@ -14,7 +15,7 @@ type Connection struct {
 	Router   ziface.IRouter
 }
 
-func NewConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
+func newConnection(conn *net.TCPConn, connID uint32, router ziface.IRouter) *Connection {
 	return &Connection{
 		Conn:     conn,
 		ConnID:   connID,
@@ -58,21 +59,29 @@ func (c *Connection) GetConnID() uint32 {
 
 func (c *Connection) StartReader() {
 	defer c.Stop()
-	defer fmt.Printf("connID = %d, reader exits, remote addr is %s\n", c.ConnID, c.RemoteAddr().String())
+	defer fmt.Printf("connID = %d, reader exit, remote addr is %s\n", c.ConnID, c.RemoteAddr().String())
 
 	for {
-		buf := make([]byte, 512)
-		_, err := c.Conn.Read(buf)
+		// 一次Read读取的动作对应一次从内核缓冲区到用户区的复制操作，读取长度最大取决于内核设置(Recv-Q队列) - net.ipv4.tcp_rmem
+		buf := make([]byte, 4096)
+
+		n, err := c.Conn.Read(buf)
 		if err != nil {
+			if err == io.EOF {
+				return
+			}
 			fmt.Printf("recv buf error:%s\n", err)
 			continue
 		}
 		req := Request{
 			conn: c,
-			data: buf,
+			data: buf[:n],
 		}
 		go func() {
+			// 模板设计模式
 			c.Router.PreHandler(&req)
+			c.Router.Handler(&req)
+			c.Router.PostHandler(&req)
 		}()
 	}
 }
