@@ -7,27 +7,31 @@ import (
 )
 
 type PingRouter struct {
-	znet.BaseRouter
+	znet.BaseHandler
 }
 
-func (pr *PingRouter) PreHandler(request ziface.IRequest) {
+func (pr *PingRouter) PreHandler(request ziface.IRequest) error {
 	_, err := request.GetConn().GetTCPConnection().Write([]byte("Pre Ping..."))
 	if err != nil {
 		fmt.Println("preping error")
+		return err
 	}
+	return nil
 }
-func (pr *PingRouter) Handler(request ziface.IRequest) {
+func (pr *PingRouter) Handler(request ziface.IRequest) error {
 	_, err := request.GetConn().GetTCPConnection().Write([]byte("PPing..."))
 	if err != nil {
 		fmt.Println("preping error")
+		return err
 	}
+	return nil
 }
-func (pr *PingRouter) PostHandler(_ ziface.IRequest) {
-
+func (pr *PingRouter) PostHandler(_ ziface.IRequest) error {
+	return nil
 }
 
 func main() {
 	s := znet.DefaultServer
-	s.AddRouter(&PingRouter{})
+	s.AddHandler(0, &PingRouter{})
 	s.Serve()
 }

@@ -3,19 +3,24 @@ package config
 import (
 	"errors"
 	"fmt"
+	"runtime"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
 
 type ServerConfig struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
-	Name string `mapstructure:"name"`
+	Host string `mapstructure:"host" json:"host,omitempty"`
+	Port int    `mapstructure:"port" json:"port,omitempty"`
+	Name string `mapstructure:"name" json:"name,omitempty"`
 
-	Version        string `mapstructure:"version"`
-	MaxConn        int    `mapstructure:"max_conn"`
-	MaxPackageSize int    `mapstructure:"max_package_size"`
+	Version        string `mapstructure:"version" json:"version,omitempty"`
+	MaxConn        int    `mapstructure:"max_conn" json:"max_conn,omitempty"`
+	MaxPackageSize int    `mapstructure:"max_package_size" json:"max_package_size,omitempty"`
+
+	MaxQueuePoolSize uint8  `mapstructure:"max_queue_pool_size"`
+	MaxQueueWorker   uint32 `mapstructure:"max_queue_worker"`
+	MaxQueueSize     uint32 `mapstructure:"max_queue_size"`
 }
 
 var DefaultConfig *ServerConfig
@@ -48,12 +53,15 @@ func (sc *ServerConfig) reload() error {
 
 func init() {
 	DefaultConfig = &ServerConfig{
-		Host:           *host,
-		Port:           *port,
-		Name:           "Default XYZ Server",
-		Version:        "v0.3",
-		MaxConn:        100,
-		MaxPackageSize: 4096,
+		Host:             *host,
+		Port:             *port,
+		Name:             "Default XYZ Server",
+		Version:          "v0.3",
+		MaxConn:          100,
+		MaxPackageSize:   4096,
+		MaxQueuePoolSize: 10,
+		MaxQueueSize:     1024,
+		MaxQueueWorker:   uint32(runtime.NumCPU()),
 	}
 	err := DefaultConfig.reload()
 	if err != nil {
