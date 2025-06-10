@@ -27,7 +27,7 @@ func Test_threesum(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := threesum(tt.args.nums); !reflect.DeepEqual(got, tt.want) {
+			if got := threeSum(tt.args.nums); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("threesum() = %v, want %v", got, tt.want)
 			}
 		})
