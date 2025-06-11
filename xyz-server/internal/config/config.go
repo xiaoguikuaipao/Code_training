@@ -59,7 +59,7 @@ func init() {
 		Version:          "v0.3",
 		MaxConn:          100,
 		MaxPackageSize:   4096,
-		MaxQueuePoolSize: 10,
+		MaxQueuePoolSize: 1,
 		MaxQueueSize:     1024,
 		MaxQueueWorker:   uint32(runtime.NumCPU()),
 	}

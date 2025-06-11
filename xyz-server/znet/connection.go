@@ -47,6 +47,7 @@ func (c *Connection) Stop() {
 	if c.isClosed {
 		return
 	}
+	c.server.CallBeforeConnDestroy(c)
 	fmt.Printf("conn stop(), id=%d\n", c.connID)
 
 	c.isClosed = true

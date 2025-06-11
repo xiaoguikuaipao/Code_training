@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"zinx/ziface"
 	"zinx/znet"
 )
@@ -32,6 +33,9 @@ func (pr *PingRouter) PostHandler(_ ziface.IRequest) error {
 
 func main() {
 	s := znet.DefaultServer
-	s.AddHandler(0, &PingRouter{})
-	s.Serve()
+	_ = s.AddHandler(0, &PingRouter{})
+	s.SetBeforeConnDestroy(func(ziface.IConnection) {
+		fmt.Println("before destroy:", time.Now())
+	})
+	s.Start()
 }

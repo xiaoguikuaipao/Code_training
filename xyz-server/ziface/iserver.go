@@ -17,4 +17,9 @@ type IServer interface {
 
 	GetTaskPool() datastructimpl.ITaskPool[datastructimpl.Itask]
 	GetConnCtrl() IConnCtrl
+
+	SetAfterConnCreate(func(IConnection))
+	CallAfterConnCreate(IConnection)
+	SetBeforeConnDestroy(func(IConnection))
+	CallBeforeConnDestroy(IConnection)
 }

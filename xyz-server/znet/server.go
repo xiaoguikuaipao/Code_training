@@ -12,13 +12,15 @@ import (
 
 // Server iServer的接口实现，定义一个Server的服务器模块
 type Server struct {
-	Name       string
-	Version    string
-	IP         string
-	Port       int
-	Handlers   ziface.IHandlerGroup
-	ConnCtr    ziface.IConnCtrl
-	QueueGroup datastructimpl.TaskPool[datastructimpl.Itask]
+	Name             string
+	Version          string
+	IP               string
+	Port             int
+	Handlers         ziface.IHandlerGroup
+	ConnCtr          ziface.IConnCtrl
+	QueueGroup       datastructimpl.TaskPool[datastructimpl.Itask]
+	beforeConnCreate func(ziface.IConnection)
+	afterConnCreate  func(ziface.IConnection)
 }
 
 var DefaultServer = &Server{}
@@ -29,12 +31,14 @@ func init() {
 
 func NewServer(config *config.ServerConfig) ziface.IServer {
 	return &Server{
-		Name:     config.Name,
-		Version:  "tcp4",
-		IP:       config.Host,
-		Port:     config.Port,
-		Handlers: NewHandlerGroup(),
-		ConnCtr:  NewConnCtrl(),
+		Name:             config.Name,
+		Version:          "tcp4",
+		IP:               config.Host,
+		Port:             config.Port,
+		Handlers:         NewHandlerGroup(),
+		ConnCtr:          NewConnCtrl(),
+		afterConnCreate:  func(ziface.IConnection) {},
+		beforeConnCreate: func(ziface.IConnection) {},
 	}
 }
 
@@ -69,19 +73,13 @@ func (s *Server) Serve() error {
 				sugar.Error("accept error:%s", err)
 				continue
 			}
-			if s.ConnCtr.Len() >= config.DefaultConfig.MaxConn {
-				//TODO: return a limit message
-				fmt.Println("conn exceeds limit")
-				conn.Close()
-				continue
-			}
-
 			cid++
 			dealConn, err := newConnection(conn, cid, s)
 			if err != nil {
 				fmt.Printf("newConnection[%d] error:%v\n", cid, err)
 				continue
 			}
+			s.CallAfterConnCreate(dealConn)
 			go dealConn.Start()
 		}
 	}()
@@ -97,6 +95,7 @@ func (s *Server) Start() {
 	if err := s.Serve(); err != nil {
 		panic(err)
 	}
+	select {}
 }
 
 func (s *Server) AddHandler(msgID uint32, router ziface.IHandler) error {
@@ -113,4 +112,20 @@ func (s *Server) GetTaskPool() datastructimpl.ITaskPool[datastructimpl.Itask] {
 
 func (s *Server) GetConnCtrl() ziface.IConnCtrl {
 	return s.ConnCtr
+}
+
+func (s *Server) SetAfterConnCreate(f func(ziface.IConnection)) {
+	s.afterConnCreate = f
+}
+
+func (s *Server) CallAfterConnCreate(c ziface.IConnection) {
+	s.afterConnCreate(c)
+}
+
+func (s *Server) SetBeforeConnDestroy(f func(ziface.IConnection)) {
+	s.beforeConnCreate = f
+}
+
+func (s *Server) CallBeforeConnDestroy(c ziface.IConnection) {
+	s.beforeConnCreate(c)
 }

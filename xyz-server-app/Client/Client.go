@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 	"zinx/znet"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8080")
+	conn, err := net.Dial("tcp", "127.0.0.1:8999")
 	if err != nil {
 		panic(err)
 	}
@@ -22,5 +23,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		time.Sleep(2 * time.Second)
 	}
 }

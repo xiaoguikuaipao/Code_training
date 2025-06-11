@@ -1,9 +1,15 @@
 package znet
 
 import (
+	"errors"
 	"fmt"
 	"sync"
+	"zinx/internal/config"
 	"zinx/ziface"
+)
+
+var (
+	ErrConnectLimit = errors.New("connect exceeds limit")
 )
 
 type ConnCtrl struct {
@@ -27,6 +33,10 @@ func (c *ConnCtrl) Get(ID uint32) (ziface.IConnection, error) {
 }
 
 func (c *ConnCtrl) Add(conn ziface.IConnection) error {
+	if c.Len() >= config.DefaultConfig.MaxConn {
+		return ErrConnectLimit
+	}
+
 	c.mu.Lock()
 	if conn, ok := c.connections[conn.GetConnID()]; ok {
 		return fmt.Errorf("conn[%d] is already existed", conn.GetConnID())
